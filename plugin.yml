@@ -1,0 +1,7 @@
+author: K0Gs
+description: A scorched earth minigame
+database: false
+main: com.k0gshole.Scorch.Scorch
+name: Scorch
+version: '1.0'
+softdepend: [AutoRegionGuard, Towny, Factions, GriefPrevention] 
