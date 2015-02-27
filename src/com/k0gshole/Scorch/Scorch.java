@@ -166,8 +166,39 @@ public class Scorch extends JavaPlugin{
 		});
 		lores.clear();
 		
+		currentLogItem = new ItemStack(Material.EGG, 1);
+		meta4 = currentLogItem.getItemMeta();
+
+		meta4.setDisplayName("\247lEgg");
+		lores.add("\247eClick here to");
+		lores.add("\247eset egg arrows...");
+		meta4.setLore(lores);
+		currentLogItem.setItemMeta(meta4);
+		displayWeaponsGui.addItem(new ItemStack[] {
+				currentLogItem
+		});
+		lores.clear();
+		
+		currentLogItem = new ItemStack(Material.ARROW, 1);
+		meta4 = currentLogItem.getItemMeta();
+
+		meta4.setDisplayName("\247lCluster");
+		lores.add("\247eClick here to");
+		lores.add("\247eset clustered arrows...");
+		meta4.setLore(lores);
+		currentLogItem.setItemMeta(meta4);
+		displayWeaponsGui.addItem(new ItemStack[] {
+				currentLogItem
+		});
+		lores.clear();
+		
 		return displayWeaponsGui;
 		
 	}
 
 }
+
+/*
+ * Version 1.2
+ * By K0Gs
+ */

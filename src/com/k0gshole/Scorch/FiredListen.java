@@ -2,6 +2,7 @@ package com.k0gshole.Scorch;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -45,7 +46,9 @@ public class FiredListen implements Listener{
 	CleanBlocks cBlocks;
 	public int counter = 0;
 	public ArrayList icedPlayer;
-	public ArrayList burnables = new ArrayList(); 
+	public ArrayList burnables = new ArrayList();
+	public ArrayList eggArrows;
+	public ArrayList clustArrows;
 	
 	public FiredListen(Scorch plugin){
 		this.plugin = plugin;
@@ -54,8 +57,10 @@ public class FiredListen implements Listener{
 		knockArrows = new ArrayList();
 		cBlocks = new CleanBlocks();
 		icedPlayer = new ArrayList();
+		eggArrows = new ArrayList();
 		burnables.add("LONG_GRASS");
 		burnables.add("AIR");
+		clustArrows = new ArrayList();
 	}
 	
 
@@ -220,6 +225,16 @@ public class FiredListen implements Listener{
 		
 		}
 		
+		for(int a = 0;a < clustArrows.size();a++){
+		tempList = new ArrayList();
+		tempList = (ArrayList) clustArrows.get(a);
+		int compInt = compareToNow((Instant)tempList.get(1));
+		if (compInt == 1){
+			clustArrows.remove(a);
+		}
+		
+		}
+		
 
 		
 	}
@@ -260,22 +275,35 @@ public class FiredListen implements Listener{
 					//plugin.getServer().broadcastMessage("Freeze...");
 
 					//plugin.getServer().broadcastMessage(Boolean.toString(event.isCancelled()));
-					event.getPlayer().setWalkSpeed(0);
-					event.getPlayer().setFlySpeed(0);
-					event.setTo(event.getPlayer().getLocation());
+					//event.getPlayer().setWalkSpeed(0);
+					//event.getPlayer().setFlySpeed(0);
+					Vector tempVec = new Vector(0,0,0);
+					Location tempLoc = null;
+					Double pX = event.getFrom().getX();
+					Double pY = event.getFrom().getY();
+					Double pZ = event.getFrom().getZ();
+					Float pPitch = event.getTo().getPitch();
+					Float pYaw = event.getTo().getYaw();
+					World world = event.getPlayer().getWorld();
+					tempLoc = new Location(world, pX, pY, pZ, pYaw, pPitch);
+					event.setTo(tempLoc);
 					event.getPlayer().playEffect(event.getPlayer().getLocation(), Effect.PARTICLE_SMOKE, 5*20);
 					
 				}
 			
 			}
-			else if (nowTime.compareTo(tempInst) == 1){
+			//else if (nowTime.compareTo(tempInst) == 1){
 
-				event.getPlayer().setWalkSpeed(Float.valueOf("0.2"));
-				event.getPlayer().setFlySpeed(Float.valueOf("0.2"));
-			}
+				//event.getPlayer().setWalkSpeed(Float.valueOf("0.2"));
+				//event.getPlayer().setFlySpeed(Float.valueOf("0.2"));
+				
+			//}
 		}
 		
+		
 	}
+	
+
 	
 	@EventHandler
 	public void onGameTickEvent(GameTickEvent event){
@@ -290,6 +318,23 @@ public class FiredListen implements Listener{
 			freezeEntity();
 			
 			
+		
+	}
+	
+	@EventHandler
+	public void onentityDamageEntity(EntityDamageByEntityEvent event){
+		
+		for(int c = 0;c < clustArrows.size();c++){
+			ArrayList tempList = new ArrayList();
+			tempList = (ArrayList) clustArrows.get(c);
+			if(tempList.get(0).toString().equals(event.getDamager().getUniqueId().toString())){
+				plugin.getServer().broadcastMessage("Cluster Hit: "+event.getEntityType().name());
+				
+				//event.setCancelled(true);
+				//event.getDamager().remove();
+			}
+			
+		}
 		
 	}
 	
@@ -333,6 +378,7 @@ public class FiredListen implements Listener{
 		}
 	}
 	
+
 	
 	}
 	
@@ -366,26 +412,186 @@ public class FiredListen implements Listener{
 		
 		if (event.getBow().getItemMeta().getLore().get(0).toString().equals("\247lKnockback")){
 			tempBowFire = new ArrayList();
-			// player.sendMessage("Bow is type Cluster...");
+			// player.sendMessage("Bow is type Knockback...");
 			tempBowFire.add(event.getProjectile().getUniqueId().toString());
-			//Arrow arrow2 = player.launchProjectile(Arrow.class);
-			//arrow2.setVelocity(event.getProjectile().getVelocity());
-			//Arrow arrow3 = player.launchProjectile(Arrow.class);
-			//arrow2.setVelocity(event.getProjectile().getVelocity());
-			//Arrow arrow4 = player.launchProjectile(Arrow.class);
-			//arrow2.setVelocity(event.getProjectile().getVelocity());
-			//Arrow arrow5 = player.launchProjectile(Arrow.class);
-			//arrow2.setVelocity(event.getProjectile().getVelocity());
+
 
 			tempBowFire.add(Instant.now().plusSeconds(10));
 			knockArrows.add(tempBowFire);
 		}
+		
+		if (event.getBow().getItemMeta().getLore().get(0).toString().equals("\247lEgg")){
+			tempBowFire = new ArrayList();
+			// player.sendMessage("Bow is type egg...");
+			tempBowFire.add(event.getProjectile().getUniqueId().toString());
+			//Arrow arrow = player.launchProjectile(Arrow.class);
+			//.setVelocity(event.getProjectile().getVelocity());
+			event.getEntity().throwEgg().setVelocity(event.getProjectile().getVelocity());;
+			tempBowFire.add(Instant.now().plusSeconds(10));
+			eggArrows.add(tempBowFire);
+			event.getProjectile().remove();
+		}
+		
+		if (event.getBow().getItemMeta().getLore().get(0).toString().equals("\247lCluster")){
+			tempBowFire = new ArrayList();
+			// player.sendMessage("Bow is type Cluster...");
+			//tempBowFire.add(event.getProjectile().getUniqueId().toString());
+			//tempBowFire.add(Instant.now());
+			//clustArrows.add(tempBowFire);
+			Location tempLoc = player.getEyeLocation();
+			Vector dir = player.getEyeLocation().getDirection();
+			Vector actDir = dir.clone().normalize();
+			Vector finVec = tempLoc.toVector().add(actDir.multiply(2));
+			
+
+			tempLoc.setX(finVec.getX());
+			tempLoc.setY(finVec.getY());
+			tempLoc.setZ(finVec.getZ());
+			World world = tempLoc.getWorld();
+			Float accel = 2.0f;
+			Vector velocity = event.getProjectile().getVelocity();
+			//tempLoc.setX(x+1);
+			player.sendMessage(event.getProjectile().getVelocity().toString());
+			clusterArrowFire(player, tempLoc, dir, finVec, accel, velocity);
+			//player.sendMessage(Float.toString(player.getLocation().getYaw()));
+			//player.sendMessage(getNameDirection(player));
+			
+		}
+		
 		
 		}
 
 
 	}
 	
+	public String getNameDirection(Player player){
+		String dirText = "Blank";
+		double rotation = (double)player.getLocation().getYaw();
+		
+		if(rotation < 0){
+			if(0 >= rotation && rotation > -45.0){
+				dirText = "South";
+			}
+			if(-45.0 >= rotation && rotation > -135.0){
+				dirText = "East";
+			}
+			if(-135.0 >= rotation && rotation > -225.0){
+				dirText = "North";
+			}
+			if(-225.0 >= rotation && rotation > -315.0){
+				dirText = "West";
+			}
+			if(-315.0 >= rotation && rotation >= -360.0){
+				dirText = "South";
+			}
+		}
+		else if(rotation > 0){
+			if(0 <= rotation && rotation < 45.0){
+				dirText = "South";
+			}
+			if(45.0 <= rotation && rotation < 135.0){
+				dirText = "West";
+			}
+			if(135.0 <= rotation && rotation < 225.0){
+				dirText = "North";
+			}
+			if(225.0 <= rotation && rotation < 315.0){
+				dirText = "East";
+			}
+			if(315.0 <= rotation && rotation <= 360.0){
+				dirText = "South";
+			}	
+			
+		}
+		
+		
+		return dirText;
+	}
+	
+	public void clusterArrowFire(Player player, Location loc, Vector dir, Vector finVec, Float power, Vector velocity){
+		ArrayList tempBowFire = new ArrayList();
+		Vector actDir = dir.clone().normalize();
+		World world = loc.getWorld();
+		String dirText = getNameDirection(player);
+		
+		if(dirText.equals("North") || dirText.equals("South")){
+			//player.sendMessage("North/South");
+		loc.setX(finVec.getX()+0.5);
+//		world.spawnArrow(loc, actDir, power, 1.0f);
+		Arrow arrow = (Arrow) world.spawnEntity(loc, EntityType.ARROW);
+		arrow.setBounce(false);
+		arrow.setShooter(player);
+		arrow.setVelocity(velocity);
+		tempBowFire.clear();
+		tempBowFire.add(arrow.getUniqueId().toString());
+		tempBowFire.add(Instant.now().plusSeconds(5));
+		clustArrows.add(tempBowFire);
+		
+		loc.setX(finVec.getX()-0.5);
+
+		Arrow arrow2 = (Arrow) world.spawnEntity(loc, EntityType.ARROW);
+		arrow2.setBounce(false);
+		arrow2.setShooter(player);
+		arrow2.setVelocity(velocity);
+		tempBowFire.clear();
+		tempBowFire.add(arrow2.getUniqueId().toString());
+		tempBowFire.add(Instant.now().plusSeconds(5));
+		clustArrows.add(tempBowFire);
+		
+		loc.setX(finVec.getX());
+		}
+		else
+			if(dirText.equals("East") || dirText.equals("West")){
+				//player.sendMessage("East/West");
+			loc.setZ(finVec.getZ()+0.5);
+
+			Arrow arrow = (Arrow) world.spawnEntity(loc, EntityType.ARROW);
+			arrow.setBounce(false);
+			arrow.setShooter(player);
+			arrow.setVelocity(velocity);
+			tempBowFire.clear();
+			tempBowFire.add(arrow.getUniqueId().toString());
+			tempBowFire.add(Instant.now().plusSeconds(5));
+			clustArrows.add(tempBowFire);
+			
+			loc.setZ(finVec.getZ()-0.5);
+
+			Arrow arrow2 = (Arrow) world.spawnEntity(loc, EntityType.ARROW);
+			arrow2.setBounce(false);
+			arrow2.setShooter(player);
+			arrow2.setVelocity(velocity);
+			tempBowFire.clear();
+			tempBowFire.add(arrow2.getUniqueId().toString());
+			tempBowFire.add(Instant.now().plusSeconds(5));
+			clustArrows.add(tempBowFire);
+			
+			loc.setZ(finVec.getZ());
+			}	
+		
+		
+		loc.setY(finVec.getY()+0.5);
+
+		Arrow arrow3 = (Arrow) world.spawnEntity(loc, EntityType.ARROW);
+		arrow3.setBounce(false);
+		arrow3.setShooter(player);
+		arrow3.setVelocity(velocity);
+		tempBowFire.clear();
+		tempBowFire.add(arrow3.getUniqueId().toString());
+		tempBowFire.add(Instant.now().plusSeconds(5));
+		clustArrows.add(tempBowFire);
+		
+		loc.setY(finVec.getY()-0.5);
+
+		Arrow arrow4 = (Arrow) world.spawnEntity(loc, EntityType.ARROW);
+		arrow4.setBounce(false);
+		arrow4.setShooter(player);
+		arrow4.setVelocity(velocity);
+		tempBowFire.clear();
+		tempBowFire.add(arrow4.getUniqueId().toString());
+		tempBowFire.add(Instant.now().plusSeconds(5));
+		clustArrows.add(tempBowFire);
+		
+	}
 
 	
 	@EventHandler
@@ -505,11 +711,21 @@ public class FiredListen implements Listener{
 			event.getEntity().remove();
 			}
 		}	
+		
+		for(int d = 0; d < clustArrows.size();d++){
+			tempList = new ArrayList();
+			tempList = (ArrayList) clustArrows.get(d);
+			if(event.getEntity().getUniqueId().toString().equals(tempList.get(0))){
+				//event.getEntity().remove();
+				
+			}
+			
+		}
 
 	}
 
 }
 /*
- * Version 1.0
+ * Version 1.2
  * By K0Gs
  */
