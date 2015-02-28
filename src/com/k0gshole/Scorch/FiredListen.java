@@ -451,7 +451,7 @@ public class FiredListen implements Listener{
 			Float accel = 2.0f;
 			Vector velocity = event.getProjectile().getVelocity();
 			//tempLoc.setX(x+1);
-			player.sendMessage(event.getProjectile().getVelocity().toString());
+			//player.sendMessage(event.getProjectile().getVelocity().toString());
 			clusterArrowFire(player, tempLoc, dir, finVec, accel, velocity);
 			//player.sendMessage(Float.toString(player.getLocation().getYaw()));
 			//player.sendMessage(getNameDirection(player));
