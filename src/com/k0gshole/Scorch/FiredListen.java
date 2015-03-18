@@ -328,7 +328,7 @@ public class FiredListen implements Listener{
 			ArrayList tempList = new ArrayList();
 			tempList = (ArrayList) clustArrows.get(c);
 			if(tempList.get(0).toString().equals(event.getDamager().getUniqueId().toString())){
-				plugin.getServer().broadcastMessage("Cluster Hit: "+event.getEntityType().name());
+				//plugin.getServer().broadcastMessage("Cluster Hit: "+event.getEntityType().name());
 				
 				//event.setCancelled(true);
 				//event.getDamager().remove();
